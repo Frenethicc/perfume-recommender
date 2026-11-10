@@ -162,9 +162,12 @@ def recommend_perfume(
     candidates = df.copy()
     candidates["score"] = scores
 
-    # Keep behavior consistent with the notebook: choose the exact weather category.
+    # Keep behavior consistent with the notebook.
+    # Parfum dengan skor 0 tidak direkomendasikan.
+    candidates = candidates.loc[candidates["score"].gt(0)]
+    # Parfum 'netral' ikut disertakan saat cuaca panas atau dingin dipilih.
     if weather is not None:
-        candidates = candidates.loc[candidates["weather_suitability"].eq(weather)]
+        candidates = candidates.loc[candidates["weather_suitability"].isin([weather, "netral"])]
 
     candidates = candidates.loc[
         candidates["Rating Value"].ge(min_rating).fillna(False)
@@ -198,6 +201,7 @@ with st.expander("ℹ️ Tentang Sistem"):
     st.markdown(
         "Sistem menyusun rekomendasi berdasarkan kemiripan karakteristik aroma dengan input notes. "
         "Filter cuaca, rating, jumlah ulasan, dan kategori brand diterapkan setelah skor kemiripan dihitung. "
+        "Kategori cuaca ditentukan dari main accords yang diberi bobot sesuai urutan dominansinya; parfum netral muncul pada pilihan cuaca panas maupun dingin. "
         "Pilihan Semua Brand tidak membatasi kandidat berdasarkan tiga daftar brand. "
         "Nilai Cosine Similarity merupakan skor kemiripan, bukan persentase akurasi."
     )
